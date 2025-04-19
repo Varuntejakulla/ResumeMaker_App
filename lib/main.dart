@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:resume_looks/login_page.dart';
 
 
 void main() {
@@ -15,7 +16,7 @@ class Myflutter extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Language x ',
       theme: ThemeData(primaryColor: const Color.fromARGB(255, 19, 64, 42)),
-      home: Dashboard(),
+      home:const LoginPage(),
     );
   }
 }
