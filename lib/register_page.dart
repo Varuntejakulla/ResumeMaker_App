@@ -13,9 +13,12 @@ class _RegisterPageState extends State<RegisterPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+    final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -29,17 +32,27 @@ class _RegisterPageState extends State<RegisterPage>
 
   @override
   void dispose() {
+   
     _controller.dispose();
-    usernameController.dispose();
+     usernameController.dispose();
     passwordController.dispose();
+    fullNameController.dispose();
+   emailController.dispose();
+   phoneController.dispose();
+   
+    confirmPasswordController.dispose();
+
     super.dispose();
   }
 
   Future<void> register() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', usernameController.text);
-    await prefs.setString('password', passwordController.text);
-
+    await prefs.setString('fullname', fullNameController.text);
+await prefs.setString('email', emailController.text);
+await prefs.setString('phone', phoneController.text);
+await prefs.setString('username', usernameController.text);
+await prefs.setString('password', passwordController.text);
+   
     _showSnackBar('Registration Successful!', color: Colors.green, icon: Icons.check);
     await Future.delayed(const Duration(seconds: 1));
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
@@ -81,57 +94,128 @@ class _RegisterPageState extends State<RegisterPage>
             padding: EdgeInsets.symmetric(horizontal: padding),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Create Account',
-                  style: TextStyle(
-                    fontSize: titleFont,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-                const SizedBox(height: 25),
-                  TextField(
-                  controller: usernameController,
-                  style: TextStyle(fontSize: textFieldFont),
-                  decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  prefixIcon: const Icon(Icons.person),
-                  ),
-                  ),
-                 const SizedBox(height: 15),
-                TextField(
-                  controller: passwordController,
-                 obscureText: true,
-                 style: TextStyle(fontSize: textFieldFont),
-                   decoration: InputDecoration(
-                   labelText: 'Password',
-                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                   prefixIcon: const Icon(Icons.lock),
-                  ),
-                  ),
+            children: [
+  Text(
+    'Create Account',
+    style: TextStyle(
+      fontSize: titleFont,
+      fontWeight: FontWeight.bold,
+      color: Colors.deepPurple,
+    ),
+  ),
+  const SizedBox(height: 25),
 
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: register,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: Colors.deepPurple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Register', style: TextStyle(fontSize: 16)),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Already have an account? Login"),
-                ),
-              ],
+  // Full Name
+  TextField(
+    controller: fullNameController,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Full Name',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.account_circle),
+    ),
+  ),
+  const SizedBox(height: 15),
+
+  // Email
+  TextField(
+    controller: emailController,
+    keyboardType: TextInputType.emailAddress,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Email',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.email),
+    ),
+  ),
+  const SizedBox(height: 15),
+
+  // Phone
+  TextField(
+    controller: phoneController,
+    keyboardType: TextInputType.phone,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Phone Number',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.phone),
+    ),
+  ),
+  const SizedBox(height: 15),
+
+  // Username
+  TextField(
+    controller: usernameController,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Username',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.person),
+    ),
+  ),
+  const SizedBox(height: 15),
+
+  // Password
+  TextField(
+    controller: passwordController,
+    obscureText: true,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Password',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.lock),
+    ),
+  ),
+  const SizedBox(height: 15),
+
+  // Confirm Password
+  TextField(
+    controller: confirmPasswordController,
+    obscureText: true,
+    style: TextStyle(fontSize: textFieldFont),
+    decoration: InputDecoration(
+      labelText: 'Confirm Password',
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      prefixIcon: const Icon(Icons.lock_outline),
+    ),
+  ),
+
+  const SizedBox(height: 30),
+
+  // Register button
+Center(
+  // ignore: sized_box_for_whitespace
+  child: Container(
+    width: MediaQuery.of(context).size.width > 600
+        ? 300  // Web view max width
+        : double.infinity, // Mobile view full width
+    child: ElevatedButton(
+      onPressed: () {
+        if (fullNameController.text.isEmpty ||
+            emailController.text.isEmpty ||
+            phoneController.text.isEmpty ||
+            usernameController.text.isEmpty ||
+            passwordController.text.isEmpty ||
+            confirmPasswordController.text.isEmpty) {
+          _showSnackBar("Please fill in all fields");
+        } else if (passwordController.text != confirmPasswordController.text) {
+          _showSnackBar("Passwords do not match");
+        } else {
+          register();
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        backgroundColor: Colors.deepPurple,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: const Text('Register', style: TextStyle(fontSize: 16,color:Colors.white)),
+    ),
+  ),
+),
+],
             ),
           ),
         ),
