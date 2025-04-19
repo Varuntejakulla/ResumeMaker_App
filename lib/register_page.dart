@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -45,18 +45,52 @@ class _RegisterPageState extends State<RegisterPage>
     super.dispose();
   }
 
-  Future<void> register() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('fullname', fullNameController.text);
-await prefs.setString('email', emailController.text);
-await prefs.setString('phone', phoneController.text);
-await prefs.setString('username', usernameController.text);
-await prefs.setString('password', passwordController.text);
-   
-    _showSnackBar('Registration Successful!', color: Colors.green, icon: Icons.check);
-    await Future.delayed(const Duration(seconds: 1));
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+Future<void> register() async {
+  final email = emailController.text;
+  final password = passwordController.text;
+  final fullName = fullNameController.text;
+  final phone = phoneController.text;
+  final username = usernameController.text;
+
+  try {
+    final response = await Supabase.instance.client.auth.signUp(
+      email: email,
+      password: password,
+    );
+
+    final user = response.user;
+    if (user != null) {
+      // Insert user data into your custom `users` table
+      await Supabase.instance.client.from('users').insert({
+        'id': user.id,
+        'email': email,
+        'full_name': fullName,
+        'username': username,
+        'phone': phone,
+      });
+
+      _showSnackBar(
+        'Registration successful! Please verify your email.',
+        color: Colors.green,
+        icon: Icons.check,
+      );
+
+      await Future.delayed(const Duration(seconds: 2));
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+    }
+  } on AuthException catch (e) {
+    if (e.message.toLowerCase().contains('user already registered')) {
+      _showSnackBar('Email already exists. Please login.');
+    } else {
+      _showSnackBar(e.message);
+    }
+  } catch (e) {
+    _showSnackBar('Unexpected error: $e');
   }
+}
+
+
 
   void _showSnackBar(String message, {Color color = Colors.red, IconData icon = Icons.error}) {
     ScaffoldMessenger.of(context).showSnackBar(

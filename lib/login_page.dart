@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -46,43 +46,55 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> login() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? savedUsername = prefs.getString('username');
-    String? savedPassword = prefs.getString('password');
+  try {
+    final email = usernameController.text.trim();
+    final password = passwordController.text;
 
-    void showCustomSnackBar(String message, {Color bgColor = Colors.red, IconData icon = Icons.error}) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(icon, color: Colors.white),
-              const SizedBox(width: 10),
-              Expanded(child: Text(message)),
-            ],
-          ),
-          backgroundColor: bgColor,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
+    // 1. Check if user exists in users table
+    final userQuery = await Supabase.instance.client
+        .from('users') // <-- your table name
+        .select()
+        .eq('email', email)
+        .maybeSingle(); // fetch single user or null
+
+    if (userQuery == null) {
+      _showSnackBar('User does not exist');
+      return;
     }
 
-    if (savedUsername == null || savedPassword == null) {
-      showCustomSnackBar('Please register first!');
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterPage()));
-      }
-    } else if (usernameController.text == savedUsername && passwordController.text == savedPassword) {
-      showCustomSnackBar(
-        'Login Successful!',
-        bgColor: const Color.fromARGB(255, 39, 29, 182),
-        icon: Icons.check_circle,
-      );
+    // 2. Try login
+    final response = await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+
+    if (response.session != null) {
+      _showSnackBar('Login successful!', bgColor: Colors.green, icon: Icons.check);
+      // TODO: Navigate to dashboard or home screen
     } else {
-      showCustomSnackBar('Invalid Credentials');
+      _showSnackBar('Invalid credentials');
     }
+
+  } on AuthException catch (e) {
+    _showSnackBar(e.message);
+  } catch (e) {
+    _showSnackBar('Something went wrong');
+  }
+}
+
+
+  void _showSnackBar(String message, {Color bgColor = Colors.red, IconData? icon}) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          if (icon != null) Icon(icon, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message)),
+        ],
+      ),
+      backgroundColor: bgColor,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override

@@ -1,10 +1,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:resume_looks/login_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 
-void main() {
-  runApp(Myflutter());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://sdmplxytepuzhlhpobaq.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbXBseHl0ZXB1emhsaHBvYmFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwNjMxNDEsImV4cCI6MjA2MDYzOTE0MX0.AJeIKiGgSFSHxH4kmKfz4eXprHDnzP4q3BmNyRAMKTM',
+  );
+  runApp(const Myflutter());
 }
 
 class Myflutter extends StatelessWidget {
